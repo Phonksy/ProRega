@@ -7,19 +7,26 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid Margin="0,10,400,0">
-        <StackPanel>
-            <Button
-                x:Name="MainButton"                
-                Cursor="Hand" Click="MainButton_Click" Width="121"
-                Content="Show folder files"
-                />
-            <ListBox Height="383" Width="376">
-                <TextBlock Grid.Column="1" Text="{Binding Name}">
-                </TextBlock>
+        <StackPanel Margin="0,-9,5,0">
+            <Button x:Name="AddFolderButton" Content="Add folder" HorizontalAlignment="Right" Margin="0,25,12,0" Width="81" Click="AddFolderButton_Click"/>
+            <Button x:Name="RemoveFolderButton" Content="Remove folder" HorizontalAlignment="Right" Margin="0,8,12,0" Click="RemoveFolderButton_Click"/>
+            <ListBox Height="69" Width="256" x:Name="foldersListBox" Margin="12,-59,0,0" HorizontalAlignment="Left">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding FolderName}"></TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Height="327" Width="376" x:Name="filesListBox" HorizontalAlignment="Center" Margin="0,13,0,0" SelectionChanged="filesListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding FileName}"></TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
         </StackPanel>
         <StackPanel Margin="400,0,-400,0">
-            <Image x:Name="Image" RenderOptions.BitmapScalingMode="Fant" HorizontalAlignment="Left" Width="400" Height="425" Stretch="Uniform"/>
+            <Image x:Name="Image" RenderOptions.BitmapScalingMode="Fant" HorizontalAlignment="Left" Width="399" Height="434" Stretch="Uniform" Margin="0,-9,0,0"/>
         </StackPanel>
     </Grid>
 </Window>

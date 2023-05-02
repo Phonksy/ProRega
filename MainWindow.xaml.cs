@@ -12,8 +12,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Core;
+using System.IO;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace Projektas
 {
@@ -22,22 +24,104 @@ namespace Projektas
     /// </summary>
     public partial class MainWindow : Window
     {
+        public ObservableCollection<MyFolder>? folders = new ObservableCollection<MyFolder>();
+        public ObservableCollection<MyFileInfo>? allFiles = new ObservableCollection<MyFileInfo>();
+
+        //public string Folders = @"C:\Users\MSI\Desktop\Folders.xml";
+        //public string Files = @"C:\Users\MSI\Desktop\Files.xml";
+        public string Files = @"C:\Users\MSI\Desktop\Files.JSON";
+        public string Folders = @"C:\Users\MSI\Desktop\Folders.JSON";
+
         public MainWindow()
         {
             InitializeComponent();
+            this.Loaded += HandleWindowLoaded;
+            this.Closing += HandleWindowClosed;
         }
 
-        private void MainButton_Click(object sender, RoutedEventArgs e)
+        public void HandleWindowClosed(object? sender, EventArgs e)
+        {           
+            //XmlSerialize.ConvertListOfObjectsToXml(allFiles, Files, true);
+            //XmlSerialize.ConvertListOfObjectsToXml(folders, Folders, true);
+
+            JSONSerialize.SerializeToJSON(allFiles, Files);
+            JSONSerialize.SerializeToJSON(folders, Folders);
+        }
+
+        public void HandleWindowLoaded(object sender, RoutedEventArgs e)
         {
-            string[] fileName = null;
-            string path = @"c:\Users\MSI\Desktop";
-            //string filter = "Image files|*.bmp;*.jpg;*.png";
-            string filter2 = "*.png";
+            //allFiles = XmlSerialize.ConvertListOfObjectsFromXml(allFiles, Files, true);
+            //folders = XmlSerialize.ConvertListOfObjectsFromXml(folders, Folders, true);
 
-            fileName = Core.Class1.OpenFolder(path, filter2);
+            allFiles = JSONSerialize.DeserializeFromJson<MyFileInfo>(Files);
+            folders = JSONSerialize.DeserializeFromJson<MyFolder>(Folders);
 
+            filesListBox.ItemsSource = allFiles;
+
+            foldersListBox.ItemsSource = folders;
+        }
+
+        private void AddFolderButton_Click(object sender, RoutedEventArgs e) 
+        {
+            Image.Source = null;
             
-            //Image.Source = Core.Class1.OpenImage(fileName);
+            string path = "";
+
+            List<MyFileInfo> files = Core.Methods.OpenFolder(ref path);
+
+            files.ToList().ForEach(allFiles.Add);
+
+            folders.Add(new MyFolder(path));            
+            
+            filesListBox.ItemsSource = allFiles;
+                       
+            foldersListBox.ItemsSource = folders;
+        }
+
+        private void filesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) 
+        {
+            BitmapImage image = new BitmapImage();
+            MyFileInfo fileInfo = (MyFileInfo)filesListBox.SelectedItem;
+
+            string path = "";
+
+            if (fileInfo != null)
+            {
+                path = fileInfo.Path;                
+            }
+            else 
+            {
+                Image.Source = null;
+            }
+
+            if (Path.Exists(path))
+            {
+                image = Core.Methods.OpenImage(path);
+                Image.Source = image;
+            }
+        }  
+
+        private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            string? selected = null;
+            MyFolder folderInfo = (MyFolder)foldersListBox.SelectedItem;
+
+            if (foldersListBox.SelectedItem != null) 
+            {
+                selected = foldersListBox.SelectedItem.ToString();
+            }
+            
+            if (selected != null) 
+            {                               
+                folders.Remove(folderInfo);
+                for (int i = allFiles.Count-1; i >=0; i--)
+                {
+                    if (allFiles[i].Path.Contains(folderInfo.Path))
+                    {                       
+                        allFiles.RemoveAt(i);
+                    }
+                }
+            }
         }
     }
 }
